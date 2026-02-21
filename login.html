@@ -340,63 +340,44 @@
     const email = document.getElementById('lEmail').value;
     const pass = document.getElementById('lPass').value;
 
-    if(!email || !pass) return alert("من فضلك ادخل البيانات");
+    if(!email || !pass) {
+        return Swal.fire({ icon: 'warning', title: 'بيانات ناقصة', text: 'ادخل البريد وكلمة المرور', confirmButtonColor: '#ff5a00' });
+    }
 
     try {
-        // 1. تسجيل الدخول
+        Swal.showLoading(); // إظهار علامة التحميل
         const res = await signInWithEmailAndPassword(auth, email, pass);
-        
-        // 2. "شم" نوع المستخدم من Firestore
         const userSnap = await getDoc(doc(db, "users", res.user.uid));
         
         if (userSnap.exists()) {
             const userData = userSnap.data();
             
-            // 3. التوجيه المباشر حسب النوع (فني أو عميل)
+            // التوجيه الذكي
             if (userData.role === 'provider') {
-                // لو فني، نتحقق إذا كان أكمل بياناته أم لا
+                // نتحقق من حالة إكمال الملف الشخصي
+                // ملاحظة: لو الحقل ده مش موجود في الداتابيز، هنفترض إنه لسه مكملش
                 if (userData.isProfileComplete === true) {
-                    window.location.href = "provider-dashboard.html"; // صفحة الفني الرئيسية
+                    window.location.href = "provider-dashboard.html";
                 } else {
-                    window.location.href = "provider_setup.html"; // صفحة إكمال البيانات (الخريطة والبطاقة)
+                    window.location.href = "provider_setup.html";
                 }
             } else {
-                // أي نوع آخر غير الفني (يعني عميل) يروح لصفحة العميل
+                // لو عميل
                 window.location.href = "client.html";
             }
         } else {
-            alert("بيانات الحساب غير مكتملة في قاعدة البيانات.");
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'لم نجد بيانات لهذا الحساب', confirmButtonColor: '#ff5a00' });
         }
-       } catch (e) {
-        console.error("Login Error:", e.code); // عشانك أنت كمبرمج تعرف السبب
-        
-        let errorMsg = "تأكد من البريد الإلكتروني وكلمة المرور وحاول مرة أخرى.";
-        
-        // تخصيص الرسالة بناءً على كود الخطأ من Firebase
-        if (e.code === 'auth/user-not-found') {
-            errorMsg = "هذا البريد الإلكتروني غير مسجل لدينا.";
-        } else if (e.code === 'auth/wrong-password') {
-            errorMsg = "كلمة المرور التي أدخلتها غير صحيحة.";
-        } else if (e.code === 'auth/network-request-failed') {
-            errorMsg = "فشل الاتصال بالإنترنت، يرجى التحقق من شبكتك.";
-        }
-
-        Swal.fire({
-            title: 'عذراً، لم نتمكن من الدخول',
-            text: errorMsg,
-            icon: 'error',
-            confirmButtonText: 'إعادة المحاولة',
-            confirmButtonColor: '#ff5a00', // اللون البرتقالي الخاص بك
-            timer: 4000, // تغلق تلقائياً بعد 4 ثوانٍ لو المستخدم لم يضغط
-            timerProgressBar: true,
-            showClass: {
-                popup: 'animate__animated animate__shakeX' // حركة اهتزاز لو عندك مكتبة Animate.css
-            }
+    } catch (e) {
+        console.error("Login Error:", e.code);
+        Swal.fire({ 
+            icon: 'error', 
+            title: 'فشل الدخول', 
+            text: 'تأكد من البريد الإلكتروني وكلمة المرور', 
+            confirmButtonColor: '#ff5a00' 
         });
     }
-
 };
-
 
     // تسجيل الدخول بجوجل
     // تسجيل الدخول بجوجل الذكي
