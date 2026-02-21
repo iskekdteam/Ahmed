@@ -336,8 +336,11 @@
     };
 
     // وظيفة تسجيل الدخول
-    document.getElementById('loginExecute').onclick = async () => {
-    const email = document.getElementById('lEmail').value;
+    document.getElementById('loginExecute').onclick = async (e) => {
+    // 1. منع الصفحة من إعادة التحميل التلقائي
+    e.preventDefault();
+
+    const email = document.getElementById('lEmail').value.trim();
     const pass = document.getElementById('lPass').value;
 
     if(!email || !pass) {
@@ -345,35 +348,38 @@
     }
 
     try {
-        Swal.showLoading(); // إظهار علامة التحميل
+        Swal.fire({ title: 'جاري التحقق...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
         const res = await signInWithEmailAndPassword(auth, email, pass);
         const userSnap = await getDoc(doc(db, "users", res.user.uid));
         
         if (userSnap.exists()) {
             const userData = userSnap.data();
-            
-            // التوجيه الذكي
+            console.log("بيانات المستخدم:", userData); // عشان تشوف الداتا في الـ Console
+
+            // 2. التوجيه الذكي مع معالجة الحقول الناقصة
             if (userData.role === 'provider') {
-                // نتحقق من حالة إكمال الملف الشخصي
-                // ملاحظة: لو الحقل ده مش موجود في الداتابيز، هنفترض إنه لسه مكملش
+                // لو الحقل مش موجود أو false هيروح لصفحة الـ setup
                 if (userData.isProfileComplete === true) {
-                    window.location.href = "provider-dashboard.html";
+                    console.log("توجيه للفني: Dashboard");
+                    window.location.replace("provider-dashboard.html"); 
                 } else {
-                    window.location.href = "provider_setup.html";
+                    console.log("توجيه للفني: Setup");
+                    window.location.replace("provider_setup.html");
                 }
             } else {
-                // لو عميل
-                window.location.href = "client.html";
+                console.log("توجيه للعميل");
+                window.location.replace("client.html");
             }
         } else {
-            Swal.fire({ icon: 'error', title: 'خطأ', text: 'لم نجد بيانات لهذا الحساب', confirmButtonColor: '#ff5a00' });
+            throw new Error("لا توجد بيانات لهذا المستخدم في قاعدة البيانات");
         }
-    } catch (e) {
-        console.error("Login Error:", e.code);
+    } catch (error) {
+        console.error("Login Error Details:", error);
         Swal.fire({ 
             icon: 'error', 
             title: 'فشل الدخول', 
-            text: 'تأكد من البريد الإلكتروني وكلمة المرور', 
+            text: 'تأكد من الحساب أو كلمة المرور، أو تأكد من وجود الملفات المطلوبة في مشروعك.', 
             confirmButtonColor: '#ff5a00' 
         });
     }
