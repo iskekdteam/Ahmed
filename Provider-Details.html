@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanaayi | بروفايل المحترف</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #ff5a00; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', sans-serif; background: #667eea; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        .app-frame {
+            background: var(--bg); width: 100%; max-width: 420px; height: 90vh;
+            border-radius: 40px; position: relative; overflow-y: auto; scrollbar-width: none;
+        }
+        .app-frame::-webkit-scrollbar { display: none; }
+
+        /* الهيدر بصورة البروفايل */
+        .profile-header {
+            height: 250px; background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7)), url('https://via.placeholder.com/400x250');
+            background-size: cover; background-position: center; position: relative;
+        }
+        .back-btn { position: absolute; top: 25px; right: 25px; background: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #333; cursor: pointer; }
+        
+        .info-card {
+            background: white; margin: -50px 20px 20px; border-radius: 25px; padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; text-align: center;
+        }
+        .info-card h2 { margin: 10px 0 5px; font-size: 22px; }
+        .info-card .category { color: var(--primary); font-weight: bold; font-size: 14px; }
+        
+        .stats { display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .stat-item { text-align: center; }
+        .stat-item span { display: block; font-weight: bold; font-size: 16px; }
+        .stat-item label { font-size: 12px; color: #888; }
+
+        .section { padding: 0 25px; margin-bottom: 25px; }
+        .section h3 { font-size: 18px; border-right: 4px solid var(--primary); padding-right: 10px; margin-bottom: 15px; }
+        .bio-text { color: #666; font-size: 14px; line-height: 1.6; }
+
+        /* معرض الأعمال */
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .gallery-grid img { width: 100%; height: 120px; border-radius: 15px; object-fit: cover; cursor: pointer; }
+
+        /* الأزرار الثابتة في الأسفل */
+        .action-bar {
+            position: sticky; bottom: 0; background: white; padding: 15px 25px;
+            display: flex; gap: 10px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+        .btn-chat { background: #f1f3f5; color: #333; border: none; padding: 15px; border-radius: 18px; cursor: pointer; font-size: 20px; }
+        .btn-order { background: var(--primary); color: white; border: none; flex: 1; border-radius: 18px; font-weight: bold; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    <div class="profile-header">
+        <div class="back-btn" onclick="history.back()"><i class="fa-solid fa-arrow-right"></i></div>
+    </div>
+
+    <div class="info-card">
+        <h2>محمد أحمد</h2>
+        <span class="category">فني تكييف وخبير صيانة</span>
+        <div class="stats">
+            <div class="stat-item"><span>4.9 <i class="fa-solid fa-star" style="color: #ffc107;"></i></span><label>التقييم</label></div>
+            <div class="stat-item"><span>+150</span><label>عملية ناجحة</label></div>
+            <div class="stat-item"><span>10 سنين</span><label>خبرة</label></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>عن المحترف</h3>
+        <p class="bio-text">متخصص في تركيب وصيانة جميع أنواع التكييفات (سبليت، مركزي). أستخدم قطع غيار أصلية وضمان على الشغل لمدة 3 شهور. متاح للطوارئ في منطقة المعادي وحلوان.</p>
+    </div>
+
+    <div class="section">
+        <h3>معرض الأعمال</h3>
+        <div class="gallery-grid">
+            <img src="https://via.placeholder.com/200" alt="Work">
+            <img src="https://via.placeholder.com/200" alt="Work">
+            <img src="https://via.placeholder.com/200" alt="Work">
+            <img src="https://via.placeholder.com/200" alt="Work">
+        </div>
+    </div>
+
+    <div class="section" style="margin-bottom: 100px;">
+        <h3>مواعيد العمل</h3>
+        <p class="bio-text"><i class="fa-regular fa-clock"></i> يومياً من 09:00 ص إلى 08:00 م</p>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn-chat"><i class="fa-regular fa-comment-dots"></i></button>
+        <button class="btn-order" onclick="confirmOrder()">اطلب الخدمة الآن</button>
+    </div>
+</div>
+
+<script>
+    function confirmOrder() {
+        alert("طرشششش! جاري تحويلك لصفحة تحديد تفاصيل العطل...");
+    }
+</script>
+
+</body>
+</html>
