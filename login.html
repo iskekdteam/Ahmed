@@ -336,54 +336,67 @@
     };
 
     // وظيفة تسجيل الدخول
-    document.getElementById('loginExecute').onclick = async (e) => {
-    // 1. منع الصفحة من إعادة التحميل التلقائي
-    e.preventDefault();
-
-    const email = document.getElementById('lEmail').value.trim();
+    document.getElementById('loginExecute').onclick = async () => {
+    const email = document.getElementById('lEmail').value;
     const pass = document.getElementById('lPass').value;
 
-    if(!email || !pass) {
-        return Swal.fire({ icon: 'warning', title: 'بيانات ناقصة', text: 'ادخل البريد وكلمة المرور', confirmButtonColor: '#ff5a00' });
-    }
+    if(!email || !pass) return alert("من فضلك ادخل البيانات");
 
     try {
-        Swal.fire({ title: 'جاري التحقق...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
+        // 1. تسجيل الدخول
         const res = await signInWithEmailAndPassword(auth, email, pass);
+        
+        // 2. "شم" نوع المستخدم من Firestore
         const userSnap = await getDoc(doc(db, "users", res.user.uid));
         
         if (userSnap.exists()) {
             const userData = userSnap.data();
-            console.log("بيانات المستخدم:", userData); // عشان تشوف الداتا في الـ Console
-
-            // 2. التوجيه الذكي مع معالجة الحقول الناقصة
+            
+            // 3. التوجيه المباشر حسب النوع (فني أو عميل)
             if (userData.role === 'provider') {
-                // لو الحقل مش موجود أو false هيروح لصفحة الـ setup
+                // لو فني، نتحقق إذا كان أكمل بياناته أم لا
                 if (userData.isProfileComplete === true) {
-                    console.log("توجيه للفني: Dashboard");
-                    window.location.replace("provider-dashboard.html"); 
+                    window.location.href = "provider-dashboard.html"; // صفحة الفني الرئيسية
                 } else {
-                    console.log("توجيه للفني: Setup");
-                    window.location.replace("provider_setup.html");
+                    window.location.href = "provider_setup.html"; // صفحة إكمال البيانات (الخريطة والبطاقة)
                 }
             } else {
-                console.log("توجيه للعميل");
-                window.location.replace("client.html");
+                // أي نوع آخر غير الفني (يعني عميل) يروح لصفحة العميل
+                window.location.href = "client.html";
             }
         } else {
-            throw new Error("لا توجد بيانات لهذا المستخدم في قاعدة البيانات");
+            alert("بيانات الحساب غير مكتملة في قاعدة البيانات.");
         }
-    } catch (error) {
-        console.error("Login Error Details:", error);
-        Swal.fire({ 
-            icon: 'error', 
-            title: 'فشل الدخول', 
-            text: 'تأكد من الحساب أو كلمة المرور، أو تأكد من وجود الملفات المطلوبة في مشروعك.', 
-            confirmButtonColor: '#ff5a00' 
+       } catch (e) {
+        console.error("Login Error:", e.code); // عشانك أنت كمبرمج تعرف السبب
+        
+        let errorMsg = "تأكد من البريد الإلكتروني وكلمة المرور وحاول مرة أخرى.";
+        
+        // تخصيص الرسالة بناءً على كود الخطأ من Firebase
+        if (e.code === 'auth/user-not-found') {
+            errorMsg = "هذا البريد الإلكتروني غير مسجل لدينا.";
+        } else if (e.code === 'auth/wrong-password') {
+            errorMsg = "كلمة المرور التي أدخلتها غير صحيحة.";
+        } else if (e.code === 'auth/network-request-failed') {
+            errorMsg = "فشل الاتصال بالإنترنت، يرجى التحقق من شبكتك.";
+        }
+
+        Swal.fire({
+            title: 'عذراً، لم نتمكن من الدخول',
+            text: errorMsg,
+            icon: 'error',
+            confirmButtonText: 'إعادة المحاولة',
+            confirmButtonColor: '#ff5a00', // اللون البرتقالي الخاص بك
+            timer: 4000, // تغلق تلقائياً بعد 4 ثوانٍ لو المستخدم لم يضغط
+            timerProgressBar: true,
+            showClass: {
+                popup: 'animate__animated animate__shakeX' // حركة اهتزاز لو عندك مكتبة Animate.css
+            }
         });
     }
+
 };
+
 
     // تسجيل الدخول بجوجل
     // تسجيل الدخول بجوجل الذكي
