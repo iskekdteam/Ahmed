@@ -85,7 +85,7 @@
 
     <div class="tabs">
         <div class="tab active" onclick="switchTab(this, 'active')">قيد التنفيذ</div>
-        <div class="tab" onclick="switchTab(this, 'history')">المنتهية</div>
+        <div class="tab" onclick="switchTab(this, 'history')">تم الانتهاء</div>
     </div>
 
     <div class="content" id="ordersList">
@@ -194,9 +194,9 @@
         switch(order.status) {
             case 'pending': 
                 // دي الحالة لما العميل يبعت الطلب ولسه مفيش فني وافق
-                statusText = "جاري البحث عن فني... 🔍"; 
+                statusText = "جاري طلب فني... 🔍"; 
                 statusClass = "status-active"; // لون برتقالي
-                footerAction = `<span style="color:#888; font-size:12px;">طلبك متاح الآن لكل الفنيين القريبين</span>`;
+                footerAction = `<span style="color:#888; font-size:12px;">في حال عدم اتاحه الفني المطلوب سيتم ابلاغ اقرب فني لك</span>`;
                 break;
             
             case 'accepted': 
@@ -240,18 +240,53 @@
 
 
     // دالة التقييم المبسطة
-    window.openRating = async (id) => {
-        const rating = prompt("قيم الفني من 1 إلى 5:");
-        if (rating >= 1 && rating <= 5) {
-            await updateDoc(doc(db, "orders", id), {
-                rating: parseInt(rating),
+    window.openRating = async (orderId) => {
+    const rating = prompt("قيم الفني من 1 إلى 5:");
+    const ratingNum = parseInt(rating);
+
+    if (ratingNum >= 1 && ratingNum <= 5) {
+        try {
+            // 1. جلب بيانات الطلب لمعرفة من هو الفني (providerId)
+            const orderDoc = await getDoc(doc(db, "orders", orderId));
+            const orderData = orderDoc.data();
+            const providerId = orderData.providerId;
+
+            if (!providerId) return alert("لا يمكن تقييم طلب بدون فني!");
+
+            // 2. تحديث مستند الطلب (عشان الزرار يختفي ويظهر التقييم)
+            await updateDoc(doc(db, "orders", orderId), {
+                rating: ratingNum,
                 ratedAt: new Date()
             });
-            alert("شكراً لتقييمك!");
-        } else {
-            alert("برجاء إدخال رقم من 1 لـ 5");
+
+            // 3. تحديث بيانات الفني (حساب المتوسط)
+            const providerRef = doc(db, "users", providerId);
+            const providerDoc = await getDoc(providerRef);
+            const providerData = providerDoc.data();
+
+            // منطق حساب المتوسط:
+            // (التقييمات القديمة + التقييم الجديد) / (عدد التقييمات + 1)
+            const oldRating = providerData.rating || 0;
+            const totalReviews = providerData.reviewsCount || 0;
+            
+            const newReviewsCount = totalReviews + 1;
+            const newAverageRating = ((oldRating * totalReviews) + ratingNum) / newReviewsCount;
+
+            await updateDoc(providerRef, {
+                rating: parseFloat(newAverageRating.toFixed(1)), // رقم واحد بعد العلامة (مثلاً 4.8)
+                reviewsCount: newReviewsCount
+            });
+
+            alert("شكراً لك! تم إضافة تقييمك للفني بنجاح.");
+        } catch (e) {
+            console.error("Error updating rating:", e);
+            alert("حدث خطأ أثناء حفظ التقييم.");
         }
-    };
+    } else {
+        alert("برجاء إدخال رقم صحيح من 1 لـ 5");
+    }
+};
+
 
     window.switchTab = (el, type) => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
